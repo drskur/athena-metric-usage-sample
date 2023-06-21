@@ -1,11 +1,23 @@
 import { NxMonorepoProject } from "@aws-prototyping-sdk/nx-monorepo";
+import { PDKPipelineTsProject } from "@aws-prototyping-sdk/pipeline";
+
 const project = new NxMonorepoProject({
   defaultReleaseBranch: "main",
-  devDeps: ["@aws-prototyping-sdk/nx-monorepo"],
+  devDeps: [
+    "@aws-prototyping-sdk/nx-monorepo",
+    "@aws-prototyping-sdk/pipeline",
+  ],
   name: "lf-cloudtrail",
-
-  // deps: [],                /* Runtime dependencies of this module. */
-  // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
-  // packageName: undefined,  /* The "name" in package.json. */
 });
+project.addGitIgnore(".idea");
+
+new PDKPipelineTsProject({
+  parent: project,
+  cdkVersion: "2.1.0",
+  defaultReleaseBranch: "mainline",
+  devDeps: [],
+  name: "infra",
+  outdir: "packages/infra",
+});
+
 project.synth();
