@@ -40,7 +40,6 @@ export class ApplicationStack extends Stack {
     new SaveMetricFunction(this, "SaveMetricFunction", {
       queue,
       bucket: storage.bucket,
-      cloudTrailRegion,
     });
   }
 }

@@ -23,20 +23,21 @@ interface QueueMessage {
   account_id: string;
   role: string;
   dt: string;
+  awsregion: string;
 }
 
-const { BUCKET, QUEUE_URL, CLOUDTRAIL_REGION } = process.env;
+const { BUCKET, QUEUE_URL } = process.env;
 
-const athenaClient = new AthenaClient({ region: CLOUDTRAIL_REGION });
 const sqsClient = new SQSClient({});
 const s3Client = new S3Client({});
 
-async function getQueryExecution(executionId: string) {
+async function getQueryExecution(executionId: string, region: string) {
+  const client = new AthenaClient({ region });
   const cmd = new GetQueryExecutionCommand({
     QueryExecutionId: executionId,
   });
 
-  return athenaClient.send(cmd);
+  return client.send(cmd);
 }
 
 async function sendMessageDelayed(message: QueueMessage, delaySeconds: number) {
@@ -87,7 +88,10 @@ export const handler: Handler = async (event: SQSEvent) => {
 
   for (const record of event.Records) {
     const message: QueueMessage = JSON.parse(record.body);
-    const execution = await getQueryExecution(message.query_id);
+    const execution = await getQueryExecution(
+      message.query_id,
+      message.awsregion
+    );
     console.log(execution);
     const state = execution.QueryExecution?.Status?.State;
     if (

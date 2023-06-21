@@ -24,7 +24,8 @@ async function runQuery() {
                 (useridentity.arn) AS uid,
                 (useridentity.accountId) AS account_id,
                 (useridentity.sessioncontext.sessionIssuer.userName) AS role,
-                from_iso8601_timestamp(eventtime) AS dt
+                from_iso8601_timestamp(eventtime) AS dt,
+                awsregion
         FROM    cloudtrail_logs_cloudtrail_awslogs_443892063838_z4rtnsvh_isengard_do_not_delete
         WHERE   eventsource='athena.amazonaws.com'
                 AND eventname='StartQueryExecution'

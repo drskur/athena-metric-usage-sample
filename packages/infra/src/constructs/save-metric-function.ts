@@ -16,7 +16,6 @@ import { Construct } from "constructs";
 export interface SaveMetricFunctionProps {
   readonly queue: IQueue;
   readonly bucket: IBucket;
-  readonly cloudTrailRegion: string;
 }
 
 export class SaveMetricFunction extends Construct {
@@ -24,7 +23,7 @@ export class SaveMetricFunction extends Construct {
   constructor(scope: Construct, id: string, props: SaveMetricFunctionProps) {
     super(scope, id);
 
-    const { queue, bucket, cloudTrailRegion } = props;
+    const { queue, bucket } = props;
 
     const role = new Role(this, "Role", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
@@ -84,16 +83,14 @@ export class SaveMetricFunction extends Construct {
       runtime: Runtime.NODEJS_18_X,
       timeout: Duration.minutes(1),
       environment: {
-        CLOUDTRAIL_REGION: cloudTrailRegion,
         BUCKET: bucket.bucketName,
         QUEUE_URL: queue.queueUrl,
       },
-      reservedConcurrentExecutions: 1,
     });
 
     this.fn.addEventSource(
       new SqsEventSource(queue, {
-        batchSize: 1,
+        batchSize: 5,
       })
     );
   }
