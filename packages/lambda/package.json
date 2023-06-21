@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-athena": "^3.354.0",
+    "@aws-sdk/client-s3": "^3.354.0",
     "@aws-sdk/client-sqs": "^3.354.0",
     "aws-lambda": "^1.0.7",
     "uuid": "^9.0.0"

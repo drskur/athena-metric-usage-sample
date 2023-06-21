@@ -24,7 +24,13 @@ new PDKPipelineTsProject({
 new TypeScriptProject({
   parent: project,
   defaultReleaseBranch: "mainline",
-  deps: ["aws-lambda", "@aws-sdk/client-athena", "@aws-sdk/client-sqs", "uuid"],
+  deps: [
+    "aws-lambda",
+    "@aws-sdk/client-athena",
+    "@aws-sdk/client-sqs",
+    "@aws-sdk/client-s3",
+    "uuid",
+  ],
   devDeps: ["@types/aws-lambda", "@types/uuid"],
   name: "lambda",
   outdir: "packages/lambda",

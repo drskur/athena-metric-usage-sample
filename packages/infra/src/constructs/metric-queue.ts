@@ -1,3 +1,4 @@
+import { Duration } from "aws-cdk-lib";
 import { Queue } from "aws-cdk-lib/aws-sqs";
 import { NagSuppressions } from "cdk-nag";
 import { Construct } from "constructs";
@@ -27,6 +28,7 @@ export class MetricQueue extends Construct {
         queue: dlq,
         maxReceiveCount: 3,
       },
+      visibilityTimeout: Duration.minutes(1),
       enforceSSL: true,
     });
   }

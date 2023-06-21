@@ -1,4 +1,6 @@
 import { Duration, Stack } from "aws-cdk-lib";
+import { Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import {
   Effect,
   PolicyStatement,
@@ -13,6 +15,10 @@ import { Construct } from "constructs";
 
 export interface QueryExecutionIdFunctionProps {
   readonly queue: IQueue;
+  readonly cloudTrailRegion: string;
+  readonly cloudTrailBucket: string;
+  readonly cloudTrailTableName: string;
+  readonly athenaResultBucket: string;
 }
 
 export class QueryExecutionIdFunction extends Construct {
@@ -24,15 +30,13 @@ export class QueryExecutionIdFunction extends Construct {
     props: QueryExecutionIdFunctionProps
   ) {
     super(scope, id);
-    const { queue } = props;
-
-    const CloudtrailRegion = "us-east-1";
-    const AthenaResultBucket =
-      "aws-athena-query-results-443892063838-us-east-1";
-    const CloudTrailBucket =
-      "cloudtrail-awslogs-443892063838-z4rtnsvh-isengard-do-not-delete";
-    const CloudTrailTableName =
-      "cloudtrail_logs_cloudtrail_awslogs_443892063838_z4rtnsvh_isengard_do_not_delete";
+    const {
+      queue,
+      cloudTrailRegion,
+      cloudTrailBucket,
+      cloudTrailTableName,
+      athenaResultBucket,
+    } = props;
 
     const role = new Role(this, "Role", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
@@ -74,8 +78,8 @@ export class QueryExecutionIdFunction extends Construct {
         ],
         resources: [
           "arn:aws:s3:::aws-athena-query-results*",
-          `arn:aws:s3:::${CloudTrailBucket}`,
-          `arn:aws:s3:::${CloudTrailBucket}/*`,
+          `arn:aws:s3:::${cloudTrailBucket}`,
+          `arn:aws:s3:::${cloudTrailBucket}/*`,
         ],
       })
     );
@@ -86,7 +90,7 @@ export class QueryExecutionIdFunction extends Construct {
           id: "AwsSolutions-IAM5",
           appliesTo: [
             "Resource::arn:aws:s3:::aws-athena-query-results*",
-            `Resource::arn:aws:s3:::${CloudTrailBucket}/*`,
+            `Resource::arn:aws:s3:::${cloudTrailBucket}/*`,
           ],
           reason: "This is not compile time resource",
         },
@@ -98,13 +102,13 @@ export class QueryExecutionIdFunction extends Construct {
         effect: Effect.ALLOW,
         actions: ["glue:GetTable"],
         resources: [
-          `arn:aws:glue:${CloudtrailRegion}:${Stack.of(this).account}:catalog`,
-          `arn:aws:glue:${CloudtrailRegion}:${
+          `arn:aws:glue:${cloudTrailRegion}:${Stack.of(this).account}:catalog`,
+          `arn:aws:glue:${cloudTrailRegion}:${
             Stack.of(this).account
           }:database/default`,
-          `arn:aws:glue:${CloudtrailRegion}:${
+          `arn:aws:glue:${cloudTrailRegion}:${
             Stack.of(this).account
-          }:table/default/${CloudTrailTableName}`,
+          }:table/default/${cloudTrailTableName}`,
         ],
       })
     );
@@ -117,10 +121,16 @@ export class QueryExecutionIdFunction extends Construct {
       runtime: Runtime.NODEJS_18_X,
       timeout: Duration.minutes(1),
       environment: {
-        CLOUDTRAIL_REGION: CloudtrailRegion,
-        ATHENA_OUTPUT: `s3://${AthenaResultBucket}/`,
+        CLOUDTRAIL_REGION: cloudTrailRegion,
+        ATHENA_OUTPUT: `s3://${athenaResultBucket}/`,
         QUEUE_URL: queue.queueUrl,
       },
     });
+
+    const eventRule = new Rule(this, "scheduleRule", {
+      schedule: Schedule.rate(Duration.hours(1)),
+    });
+
+    eventRule.addTarget(new LambdaFunction(this.fn));
   }
 }
