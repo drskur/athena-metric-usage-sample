@@ -1,5 +1,6 @@
 import { NxMonorepoProject } from "@aws-prototyping-sdk/nx-monorepo";
 import { PDKPipelineTsProject } from "@aws-prototyping-sdk/pipeline";
+import { TypeScriptProject } from "projen/lib/typescript";
 
 const project = new NxMonorepoProject({
   defaultReleaseBranch: "main",
@@ -18,6 +19,16 @@ new PDKPipelineTsProject({
   devDeps: [],
   name: "infra",
   outdir: "packages/infra",
+});
+
+new TypeScriptProject({
+  parent: project,
+  defaultReleaseBranch: "mainline",
+  deps: ["aws-lambda", "@aws-sdk/client-athena", "@aws-sdk/client-sqs", "uuid"],
+  devDeps: ["@types/aws-lambda", "@types/uuid"],
+  name: "lambda",
+  outdir: "packages/lambda",
+  prettier: true,
 });
 
 project.synth();
