@@ -9,11 +9,7 @@ import {
   QueryExecutionState,
   StartQueryExecutionCommand,
 } from "@aws-sdk/client-athena";
-import {
-  SendMessageBatchCommand,
-  SendMessageBatchRequestEntry,
-  SQSClient,
-} from "@aws-sdk/client-sqs";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { Handler } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 
@@ -112,18 +108,16 @@ function queryResultsJson(output: GetQueryResultsCommandOutput) {
   return data;
 }
 
-async function sendQueueMessage(record: Record<string, string>[]) {
+async function sendQueueMessage(records: Record<string, string>[]) {
   const client = new SQSClient({});
-  const entries: SendMessageBatchRequestEntry[] = record.map((r) => ({
-    Id: uuidv4(),
-    MessageBody: JSON.stringify(r),
-  }));
-  const cmd = new SendMessageBatchCommand({
-    QueueUrl: QUEUE_URL,
-    Entries: entries,
-  });
 
-  await client.send(cmd);
+  for (const record of records) {
+    const cmd = new SendMessageCommand({
+      QueueUrl: QUEUE_URL,
+      MessageBody: JSON.stringify(record),
+    });
+    await client.send(cmd);
+  }
 }
 
 export const handler: Handler = async (event) => {
