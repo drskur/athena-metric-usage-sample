@@ -21,12 +21,10 @@ const devStage = new ApplicationStage(app, branchPrefix + "Dev", {
     account: process.env.CDK_DEFAULT_ACCOUNT!, // Replace with Dev account
     region: process.env.CDK_DEFAULT_REGION!, // Replace with Dev region
   },
-  cloudTrailRegion: "us-east-1",
-  cloudTrailBucket:
-    "cloudtrail-awslogs-443892063838-z4rtnsvh-isengard-do-not-delete",
-  cloudTrailTableName:
-    "cloudtrail_logs_cloudtrail_awslogs_443892063838_z4rtnsvh_isengard_do_not_delete",
-  athenaResultBucket: "aws-athena-query-results-443892063838-us-east-1",
+  cloudTrailRegion: "<CLOUDTRAIL_REGION>",
+  cloudTrailBucket: "<CLOUD_TRAIL_OUTPUT_BUCKET>",
+  cloudTrailTableName: "<CLOUD_TRAIL_ATHENA_TABLE_NAME>",
+  athenaResultBucket: "<ATHENA_RESULT_BUCKET>",
 });
 
 pipelineStack.pipeline.addStage(devStage);
