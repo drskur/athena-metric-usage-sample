@@ -59,6 +59,7 @@ async function putMetricData(
   const metric = {
     query_id: message.query_id,
     account_id: message.account_id,
+    role: message.role,
     timestamp: message.dt,
     state: output.QueryExecution?.Status?.State,
     stage_change_reason: output.QueryExecution?.Status?.StateChangeReason,
